@@ -1,8 +1,10 @@
 require 'chef/cookbook/metadata'
+require 'jsonlint/rake_task'
 
 task default:  [:build, 'build:destroy', 'build:cucumber']
 task validate: ['validate:berks', 'validate:rubocop', 'validate:foodcritic',
-                'validate:reek', 'validate:knife', 'validate:chefspec']
+                'validate:reek', 'validate:jsonlint', 'validate:knife',
+                'validate:chefspec']
 task build:    [:validate, 'build:converge', 'build:verify']
 task clean:    ['build:destroy']
 task deploy:   ['deploy:delete', 'deploy:upload', 'berkshelf:delete']
@@ -36,6 +38,13 @@ namespace :validate do
   desc 'Runs Reek Code smell detector'
   task :reek do
     sh 'reek .'
+  end
+
+  desc 'Runs JsonLint static code analyzer'
+  JsonLint::RakeTask.new do |t|
+    t.paths = %w(
+      ./**/*.json
+    )
   end
 
   desc 'Runs Rubocop static code analyzer'
