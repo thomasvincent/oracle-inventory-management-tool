@@ -8,5 +8,11 @@
 #
 
 ######################################################
-# description for oracle-inventory default attribute "key"
-default['oracle-inventory']['default']['key'] = ''
+# Group ownership of Oracle Inventory file
+default['acx-oracle']['inventory']['group'] = 'dba'
+# User ownership of Oracle Inventory file
+default['acx-oracle']['inventory']['user'] = 'oracle'
+# Group ownership of Oracle Inventory file location
+default['acx-oracle']['inventory']['oraInst'] = '/etc/oraInst.loc'
+# Group ownership of Oracle Inventory directory location
+default['acx-oracle']['inventory']['location'] = '/opt/oracle/inventory'
