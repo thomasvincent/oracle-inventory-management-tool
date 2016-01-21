@@ -10,9 +10,12 @@ provisioner:
 
 platforms:
   - name: centos-6.5
+  - name: centos-7
 
 suites:
   - name: oracle-inventory
     run_list:
-      - recipe[acx-oracle-inventory::default]
-    attributes:
+      - recipe[acx-oracle-inventory::inventory_test]
+  - name: oracle-inventory
+    run_list:
+      - recipe[acx-oracle-inventory::inventory_override_test]
