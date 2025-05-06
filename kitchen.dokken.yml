@@ -1,23 +1,35 @@
 ---
 driver:
-  name: vagrant
-  customize:
-    natdnshostresolver1: 'on'
+  name: dokken
+  privileged: true
+  chef_version: 17
+
+transport:
+  name: dokken
 
 provisioner:
-  name: chef_zero
+  name: dokken
   product_name: chef
   product_version: 17
-  install_strategy: once
 
 verifier:
   name: inspec
 
 platforms:
   - name: centos-7
+    driver:
+      image: dokken/centos-7
+      pid_one_command: /usr/lib/systemd/systemd
+  
   - name: centos-8
-  - name: oracle-7
-  - name: amazon-2
+    driver:
+      image: dokken/centos-8
+      pid_one_command: /usr/lib/systemd/systemd
+  
+  - name: amazonlinux-2
+    driver:
+      image: dokken/amazonlinux-2
+      pid_one_command: /usr/lib/systemd/systemd
 
 suites:
   - name: default

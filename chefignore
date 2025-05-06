@@ -1,5 +1,5 @@
 # Put files/directories that should be ignored in this file when uploading
-# or sharing to the community site.
+# to a Chef Infra Server or Supermarket.
 # Lines that start with '# ' are comments.
 
 # OS generated files #
@@ -31,9 +31,11 @@ tmtags
 .settings
 mkmf.log
 .idea
+.vscode
+.editorconfig
 
-## COMPILED ##
-##############
+# COMPILED #
+###########
 a.out
 *.o
 *.pyc
@@ -52,9 +54,17 @@ spec/*
 spec/fixtures/*
 test/*
 features/*
+examples/*
 Guardfile
 Procfile
 .kitchen
+.kitchen.yml
+kitchen*.yml
+.rubocop.yml
+.travis.yml
+.github/*
+.gitlab-ci.yml
+appveyor.yml
 
 # SCM #
 #######
@@ -68,6 +78,7 @@ Procfile
 */.bzr/*
 */.hg/*
 */.svn/*
+.gitkeep
 
 # Berkshelf #
 #############
@@ -76,22 +87,33 @@ Berksfile.lock
 cookbooks/*
 tmp
 
-# Cookbooks #
-#############
-CONTRIBUTING
+# Bundler #
+###########
+vendor/*
+Gemfile
+Gemfile.lock
 
-# Strainer #
-############
-Colanderfile
-Strainerfile
-.colander
-.strainer
+# Policyfile #
+##############
+Policyfile.rb
+Policyfile.lock.json
+
+# Documentation #
+#############
+CODE_OF_CONDUCT*
+CONTRIBUTING*
+documentation/*
+TESTING*
+UPGRADING*
 
 # Vagrant #
 ###########
 .vagrant
 Vagrantfile
 
-# Travis #
-##########
+# CI/CD #
+#########
 .travis.yml
+.github/*
+Dockerfile
+.dockerignore

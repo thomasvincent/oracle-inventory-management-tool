@@ -1,19 +1,56 @@
-## Security Policy
+# Security Policy
 
-We take security seriously. If you discover any security related issues, please email thomasvincent@[your-domain] instead of using the issue tracker.
+## Supported Versions
 
-### Supported Versions
+Only the latest major version is currently being supported with security updates.
 
 | Version | Supported          |
 | ------- | ------------------ |
-| X.X.X   | :white_check_mark: |
-| X.X.X   | :x:                |
+| 2.x.x   | :white_check_mark: |
+| 1.x.x   | :x:                |
 
-### Reporting a Vulnerability
+## Reporting a Vulnerability
 
-Please report (suspected) security vulnerabilities to thomasvincent@[your-domain]. You will receive a response from us within [your-response-timeframe]. If the issue is confirmed, we will release a patch as soon as possible depending on complexity but historically within [your-patch-timeframe].
+We take the security of the Oracle Inventory Management cookbook seriously. If you believe you've found a security vulnerability, please follow these steps:
 
-### Additional Security Considerations
-[Add language or framework-specific OWASP Top 10 guidance here]
+1. **Do not disclose the vulnerability publicly**
+2. **Email the details to security@thomasvincent.xyz**
+3. Include as much information as possible, such as:
+   - Type of vulnerability
+   - Steps to reproduce
+   - Potential impact
+   - Suggested fix if available
 
-[If applicable, add information about your bug bounty program here]
+You will receive an acknowledgment within 48 hours. We'll work with you to understand and validate the issue.
+
+## Security Best Practices
+
+When using this cookbook, consider the following security best practices:
+
+- Run Oracle software with the principle of least privilege
+- Ensure the Oracle inventory directory has proper permissions (default: 0775)
+- Lock the Oracle user account when not required for interactive use
+- Regularly rotate backups of the inventory
+- Monitor changes to the inventory directory
+- Use the audit logging feature to track changes
+
+## Implementation Details
+
+The cookbook implements several security measures:
+
+- Secure file permissions
+- User account lockdown
+- Input validation
+- Audit logging
+- Backup functionality
+
+## Responsible Disclosure
+
+We follow responsible disclosure principles and will:
+
+- Acknowledge receipt of your vulnerability report
+- Provide an estimated timeline for a fix
+- Notify you when the vulnerability has been fixed
+- Credit you in the release notes (unless you prefer to remain anonymous)
+
+Thank you for helping keep Oracle Inventory Management and its users secure!

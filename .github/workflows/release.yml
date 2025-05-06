@@ -1,0 +1,39 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  release:
+    name: Release to Supermarket
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.1'
+          bundler-cache: true
+      
+      - name: Install dependencies
+        run: |
+          gem install chef-cli -v 18.2.7 --no-document
+          gem install stove -v 9.3.0 --no-document
+
+      - name: Configure Supermarket credentials
+        run: |
+          mkdir -p ~/.chef
+          echo "current_user = '${{ secrets.SUPERMARKET_USERNAME }}'" > ~/.chef/credentials
+          echo "node_name = '${{ secrets.SUPERMARKET_USERNAME }}'" >> ~/.chef/credentials
+          echo "client_key = '$(pwd)/client.pem'" >> ~/.chef/credentials
+          echo "${{ secrets.SUPERMARKET_KEY }}" > client.pem
+          chmod 600 client.pem
+
+      - name: Release to Chef Supermarket
+        run: |
+          VERSION=$(grep "^version" metadata.rb | awk '{print $2}' | tr -d "'")
+          echo "Releasing version $VERSION to Supermarket"
+          stove --no-git --username ${{ secrets.SUPERMARKET_USERNAME }} --key client.pem

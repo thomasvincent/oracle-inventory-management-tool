@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.1'
+          bundler-cache: true
+      
+      - name: Install dependencies
+        run: |
+          gem install chef-cli -v 18.2.7 --no-document
+          gem install cookstyle -v 7.32.1 --no-document
+          gem install foodcritic -v 16.3.0 --no-document
+
+      - name: Run Cookstyle
+        run: cookstyle .
+      
+      - name: Run Foodcritic
+        run: foodcritic .
+
+  unit:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.1'
+          bundler-cache: true
+      
+      - name: Install dependencies
+        run: |
+          gem install chef-cli -v 18.2.7 --no-document
+          gem install rspec -v 3.12.0 --no-document
+          gem install chefspec -v 9.3.3 --no-document
+
+      - name: Run ChefSpec
+        run: chef exec rspec
+
+  integration:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.1'
+          bundler-cache: true
+      
+      - name: Install dependencies
+        run: |
+          gem install chef-cli -v 18.2.7 --no-document
+          gem install kitchen-vagrant -v 1.14.0 --no-document
+          gem install kitchen-dokken -v 2.19.0 --no-document
+      
+      - name: Run Test Kitchen with Dokken
+        run: |
+          KITCHEN_LOCAL_YAML=kitchen.dokken.yml kitchen test --concurrency=2
+        env:
+          CHEF_LICENSE: accept-no-persist

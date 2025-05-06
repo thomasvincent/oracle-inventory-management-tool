@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<INVENTORY>
+  <VERSION_INFO>
+    <SAVED_WITH>Oracle Inventory Manager</SAVED_WITH>
+    <MINIMUM_VER>2.1.0.6.0</MINIMUM_VER>
+  </VERSION_INFO>
+  <HOME_LIST>
+    <HOME NAME="<%= @product_name %>" LOC="<%= @oracle_home %>" TYPE="O" IDX="1">
+      <NODE_LIST>
+        <NODE NAME="<%= node['hostname'] %>"/>
+      </NODE_LIST>
+      <REFHOMELIST>
+        <REFHOME LOC="<%= @oracle_base %>"/>
+      </REFHOMELIST>
+    </HOME>
+  </HOME_LIST>
+  <COMPOSITEHOME_LIST>
+  </COMPOSITEHOME_LIST>
+  <PRODUCT_INFO>
+    <PRODUCT NAME="<%= @product_name %>">
+      <VERSION VALUE="<%= @product_version %>"/>
+      <INSTALLATION_TYPE VALUE="<%= @installation_type %>"/>
+      <INSTALLATION_DATE VALUE="<%= @installation_date %>"/>
+      <INSTALLATION_USER VALUE="<%= @installation_user %>"/>
+    </PRODUCT>
+  </PRODUCT_INFO>
+</INVENTORY>
