@@ -8,73 +8,53 @@ on:
 
 jobs:
   lint:
-    name: Lint
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.1'
-          bundler-cache: true
-      
-      - name: Install dependencies
-        run: |
-          gem install chef-cli -v 18.2.7 --no-document
-          gem install cookstyle -v 7.32.1 --no-document
-          gem install foodcritic -v 16.3.0 --no-document
+      - uses: actions/checkout@v4
+      - name: Run cookstyle
+        uses: actionshub/cookstyle@main
 
-      - name: Run Cookstyle
-        run: cookstyle .
-      
-      - name: Run Foodcritic
-        run: foodcritic .
-
-  unit:
-    name: Unit Tests
+  yamllint:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.1'
-          bundler-cache: true
-      
-      - name: Install dependencies
-        run: |
-          gem install chef-cli -v 18.2.7 --no-document
-          gem install rspec -v 3.12.0 --no-document
-          gem install chefspec -v 9.3.3 --no-document
+      - uses: actions/checkout@v4
+      - name: yamllint
+        uses: actionshub/yamllint@main
 
-      - name: Run ChefSpec
-        run: chef exec rspec
-
-  integration:
-    name: Integration Tests
+  mdl:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.1'
-          bundler-cache: true
-      
-      - name: Install dependencies
-        run: |
-          gem install chef-cli -v 18.2.7 --no-document
-          gem install kitchen-vagrant -v 1.14.0 --no-document
-          gem install kitchen-dokken -v 2.19.0 --no-document
-      
-      - name: Run Test Kitchen with Dokken
-        run: |
-          KITCHEN_LOCAL_YAML=kitchen.dokken.yml kitchen test --concurrency=2
+      - uses: actions/checkout@v4
+      - name: Markdown Lint
+        uses: actionshub/markdownlint@main
+
+  delivery:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Delivery
+        uses: actionshub/chef-delivery@main
         env:
           CHEF_LICENSE: accept-no-persist
+
+  test:
+    needs: [lint, yamllint, mdl, delivery]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: ['ubuntu-2004', 'centos-7', 'centos-8', 'amazon-2']
+        suite: ['default', 'backup', 'oracle-versions', 'oracle-rac', 'custom-resource']
+      fail-fast: false
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+      - name: Install Chef
+        uses: actionshub/chef-install@main
+      - name: Dokken
+        uses: actionshub/test-kitchen@main
+        env:
+          CHEF_LICENSE: accept-no-persist
+          KITCHEN_LOCAL_YAML: kitchen.dokken.yml
+        with:
+          suite: ${{ matrix.suite }}
+          os: ${{ matrix.os }}
