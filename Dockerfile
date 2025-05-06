@@ -1,4 +1,4 @@
-FROM ruby:3.1-slim
+FROM ruby:3.4-slim
 
 ARG VERSION=2.0.0
 LABEL org.opencontainers.image.title="Oracle Inventory Management Cookbook"
