@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<RAC_NODE_INVENTORY>
+  <VERSION_INFO>
+    <SAVED_WITH>Oracle Inventory Manager</SAVED_WITH>
+    <MINIMUM_VER>2.1.0.6.0</MINIMUM_VER>
+  </VERSION_INFO>
+  <NODE_INFO>
+    <NODE NAME="<%= @node_name %>" HOSTNAME="<%= @node_name %>">
+      <HOME NAME="<%= @product_name %>" LOC="<%= @oracle_home %>" TYPE="O">
+        <ORACLE_BASE VALUE="<%= @oracle_base %>"/>
+        <VERSION VALUE="<%= @product_version %>"/>
+        <ORACLE_VERSION VALUE="<%= @oracle_version %>"/>
+        <EDITION VALUE="<%= @installation_edition %>"/>
+      </HOME>
+      <% if @grid_home -%>
+      <HOME NAME="<%= @product_name %> Grid Infrastructure" LOC="<%= @grid_home %>" TYPE="G">
+        <ORACLE_BASE VALUE="<%= @oracle_base %>"/>
+        <VERSION VALUE="<%= @product_version %>"/>
+        <ORACLE_VERSION VALUE="<%= @oracle_version %>"/>
+        <EDITION VALUE="<%= @installation_edition %>"/>
+      </HOME>
+      <% end -%>
+    </NODE>
+  </NODE_INFO>
+  <CLUSTER_INFO>
+    <VERSION VALUE="<%= @product_version %>"/>
+    <INSTALLATION_TYPE VALUE="<%= @installation_type %>"/>
+    <INSTALLATION_EDITION VALUE="<%= @installation_edition %>"/>
+  </CLUSTER_INFO>
+</RAC_NODE_INVENTORY>

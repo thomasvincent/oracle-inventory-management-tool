@@ -2,34 +2,41 @@
 driver:
   name: dokken
   privileged: true
-  chef_version: 17
+  chef_version: <%= ENV['CHEF_VERSION'] || 'current' %>
 
 transport:
   name: dokken
 
 provisioner:
   name: dokken
-  product_name: chef
-  product_version: 17
+  chef_license: accept-no-persist
+  deprecations_as_errors: true
 
 verifier:
   name: inspec
 
 platforms:
+  - name: ubuntu-20.04
+    driver:
+      image: dokken/ubuntu-20.04
+      pid_one_command: /bin/systemd
+      intermediate_instructions:
+        - RUN /usr/bin/apt-get update
+
   - name: centos-7
     driver:
       image: dokken/centos-7
       pid_one_command: /usr/lib/systemd/systemd
-  
+
   - name: centos-8
     driver:
       image: dokken/centos-8
       pid_one_command: /usr/lib/systemd/systemd
-  
-  - name: amazonlinux-2
+
+  - name: amazon-2
     driver:
       image: dokken/amazonlinux-2
-      pid_one_command: /usr/lib/systemd/systemd
+      pid_one_command: /lib/systemd/systemd
 
 suites:
   - name: default
@@ -46,6 +53,8 @@ suites:
           location: /opt/oracle/oraInventory
           ora_inst_path: /etc/oraInst.loc
           manage_users: true
+          audit_changes: true
+          audit_log: /var/log/oracle/inventory_audit.log
           
   - name: backup
     run_list:
@@ -64,3 +73,65 @@ suites:
           manage_users: true
           backup_dir: /var/backups/oracle_inventory
           max_backups: 5
+          audit_changes: true
+          audit_log: /var/log/oracle/inventory_audit.log
+
+  # Test suite for Oracle version support
+  - name: oracle-versions
+    run_list:
+      - recipe[oracle-inventory-management::default]
+      - recipe[oracle-inventory-management::test_versions]
+    verifier:
+      inspec_tests:
+        - test/integration/oracle-versions
+    attributes:
+      oracle:
+        inventory:
+          user: oracle
+          group: dba
+          location: /opt/oracle/oraInventory
+          ora_inst_path: /etc/oraInst.loc
+          manage_users: true
+          audit_changes: true
+          audit_log: /var/log/oracle/inventory_audit.log
+        default_version: '19c'
+
+  # Test suite for Oracle RAC support
+  - name: oracle-rac
+    run_list:
+      - recipe[oracle-inventory-management::default]
+      - recipe[oracle-inventory-management::test_rac]
+    verifier:
+      inspec_tests:
+        - test/integration/oracle-rac
+    attributes:
+      oracle:
+        inventory:
+          user: oracle
+          group: dba
+          location: /opt/oracle/oraInventory
+          ora_inst_path: /etc/oraInst.loc
+          manage_users: true
+          audit_changes: true
+          audit_log: /var/log/oracle/inventory_audit.log
+        default_version: '19c'
+
+  # Test suite for inventory_entry custom resource
+  - name: custom-resource
+    run_list:
+      - recipe[oracle-inventory-management::default]
+      - recipe[oracle-inventory-management::test_custom_resource]
+    verifier:
+      inspec_tests:
+        - test/integration/custom-resource
+    attributes:
+      oracle:
+        inventory:
+          user: oracle
+          group: dba
+          location: /opt/oracle/oraInventory
+          ora_inst_path: /etc/oraInst.loc
+          manage_users: true
+          audit_changes: true
+          audit_log: /var/log/oracle/inventory_audit.log
+        default_version: '19c'

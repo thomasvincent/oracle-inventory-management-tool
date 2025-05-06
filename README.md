@@ -3,6 +3,7 @@
 [![Chef Cookbook](https://img.shields.io/cookbook/v/oracle-inventory-management.svg)](https://supermarket.chef.io/cookbooks/oracle-inventory-management)
 [![Build Status](https://github.com/thomasvincent/oracle-inventory-management-tool/actions/workflows/ci.yml/badge.svg)](https://github.com/thomasvincent/oracle-inventory-management-tool/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![GitHub Packages](https://img.shields.io/badge/github-packages-yellow)](https://github.com/thomasvincent/oracle-inventory-management-tool/packages)
 
 An enterprise-grade Chef cookbook that manages the Oracle central inventory file and directory structure. The Oracle inventory is required for all Oracle software installations, and this cookbook ensures it's properly configured according to best practices.
 
@@ -16,6 +17,9 @@ The Oracle Inventory is a crucial component of Oracle software installations, st
 - Implements automated backups and recovery
 - Ensures security best practices for inventory management
 - Includes comprehensive audit logging and monitoring
+- Supports all Oracle database versions (11g, 12c, 18c, 19c, 21c)
+- Supports Oracle RAC (Real Application Clusters) configurations
+- Integrates with GitHub Packages for distribution
 
 ## Requirements
 
@@ -58,8 +62,16 @@ The Oracle Inventory is a crucial component of Oracle software installations, st
 | `node['oracle']['inventory']['validate_xml']` | Boolean | Validate inventory XML structure | `false` |
 | `node['oracle']['inventory']['audit_changes']` | Boolean | Enable audit logging of changes | `true` |
 | `node['oracle']['inventory']['audit_log']` | String | Path to audit log file | `'/var/log/oracle/inventory_audit.log'` |
+| `node['oracle']['versions']['VERSION']['full_version']` | String | Full version string for Oracle | Varies by version |
+| `node['oracle']['versions']['VERSION']['short_version']` | String | Short version string | Varies by version |
+| `node['oracle']['versions']['VERSION']['install_type']` | Hash | Available installation types | Varies by version |
+| `node['oracle']['versions']['VERSION']['default_oracle_base']` | String | Default Oracle base path | Varies by version |
+| `node['oracle']['versions']['VERSION']['default_oracle_home']` | String | Default Oracle home path | Varies by version |
+| `node['oracle']['rac']['grid_base']` | String | Base directory for Grid Infrastructure | `/u01/app/grid` |
+| `node['oracle']['rac']['grid_home']` | Hash | Grid home directories by version | Varies by version |
+| `node['oracle']['default_version']` | String | Default Oracle version to use | `'19c'` |
 
-See `attributes/default.rb` for more details.
+See `attributes/default.rb` and `attributes/oracle_versions.rb` for more details.
 
 ## Recipes
 
@@ -75,6 +87,18 @@ Creates a backup of the Oracle inventory for disaster recovery purposes.
 
 Sets up automated backups of the Oracle inventory using cron.
 
+### test_versions
+
+Test recipe for validating Oracle version support.
+
+### test_rac
+
+Test recipe for validating Oracle RAC support.
+
+### test_custom_resource
+
+Test recipe for validating the inventory_entry custom resource.
+
 ## Custom Resources
 
 ### inventory_entry
@@ -87,9 +111,15 @@ Registers an Oracle product with the central inventory.
 - `product_version` - Version of the Oracle product (required)
 - `oracle_home` - Oracle home directory path (required)
 - `oracle_base` - Oracle base directory path (required)
-- `installation_type` - Type of Oracle installation (default: 'Enterprise')
+- `oracle_version` - Oracle version identifier (e.g., '19c', '12.2')
+- `installation_type` - Type of Oracle installation (default: 'EE')
+- `installation_edition` - Edition of Oracle installation (derived from type if not specified)
 - `installation_date` - Date of installation (default: current time)
 - `installation_user` - User who performed the installation (default: oracle user from attributes)
+- `components` - Array of Oracle components that are part of this installation
+- `is_rac` - Whether this is a RAC installation (default: false)
+- `rac_nodes` - Array of RAC node hostnames (required for RAC)
+- `grid_home` - Oracle Grid Infrastructure home path (required for RAC)
 
 #### Actions
 
@@ -99,12 +129,30 @@ Registers an Oracle product with the central inventory.
 #### Examples
 
 ```ruby
-# Register an Oracle database installation
-inventory_entry 'Oracle Database' do
-  product_version '19.0.0.0.0'
-  oracle_home '/u01/app/oracle/product/19.0.0/dbhome_1'
-  oracle_base '/u01/app/oracle'
+# Register a standard Oracle database installation
+inventory_entry 'Oracle Database 19c' do
+  oracle_version '19c'
+  product_version node['oracle']['versions']['19c']['full_version']
+  oracle_home node['oracle']['versions']['19c']['default_oracle_home']
+  oracle_base node['oracle']['versions']['19c']['default_oracle_base']
   installation_type 'EE'
+  action :register
+end
+
+# Register an Oracle RAC installation
+inventory_entry 'Oracle RAC Database 19c' do
+  oracle_version '19c'
+  product_version node['oracle']['versions']['19c']['full_version']
+  oracle_home node['oracle']['versions']['19c']['default_oracle_home']
+  oracle_base node['oracle']['versions']['19c']['default_oracle_base']
+  installation_type 'EE'
+  is_rac true
+  rac_nodes ['rac-node1', 'rac-node2']
+  grid_home node['oracle']['rac']['grid_home']['19c']
+  components [
+    { 'name' => 'Oracle Clusterware', 'version' => node['oracle']['versions']['19c']['full_version'] },
+    { 'name' => 'Oracle Automatic Storage Management', 'version' => node['oracle']['versions']['19c']['full_version'] }
+  ]
   action :register
 end
 ```
@@ -134,14 +182,36 @@ include_recipe 'oracle-inventory-management::default'
 # ...
 
 # Register the database in the inventory
-inventory_entry 'Oracle Database' do
-  product_version '19.0.0.0.0'
-  oracle_home '/u01/app/oracle/product/19.0.0/dbhome_1'
-  oracle_base '/u01/app/oracle'
+inventory_entry 'Oracle Database 19c' do
+  oracle_version '19c'
+  product_version node['oracle']['versions']['19c']['full_version']
+  oracle_home node['oracle']['versions']['19c']['default_oracle_home']
+  oracle_base node['oracle']['versions']['19c']['default_oracle_base']
 end
 
 # Set up automated backups
 include_recipe 'oracle-inventory-management::schedule_backup'
+```
+
+### Using with RAC Configuration
+
+For Oracle RAC installations, use the RAC-specific properties:
+
+```ruby
+inventory_entry 'Oracle RAC Database 19c' do
+  oracle_version '19c'
+  product_version node['oracle']['versions']['19c']['full_version']
+  oracle_home node['oracle']['versions']['19c']['default_oracle_home']
+  oracle_base node['oracle']['versions']['19c']['default_oracle_base']
+  installation_type 'EE'
+  is_rac true
+  rac_nodes ['rac-node1', 'rac-node2']
+  grid_home node['oracle']['rac']['grid_home']['19c']
+  components [
+    { 'name' => 'Oracle Clusterware' },
+    { 'name' => 'Oracle Automatic Storage Management' }
+  ]
+end
 ```
 
 ## How It Works
@@ -152,13 +222,39 @@ The Oracle Inventory consists of:
 
 1. **oraInst.loc file** - Usually located at `/etc/oraInst.loc`, this file points to the inventory directory and defines the group ownership
 2. **Inventory directory** - Contains XML files and other metadata about Oracle product installations
+3. **Product-specific directories** - For each Oracle product registered in the inventory
+4. **RAC-specific files** - For Oracle RAC installations, node-specific inventory files
+5. **Component files** - For tracking individual Oracle components within a product
 
 ### Workflow
 
 1. The cookbook first creates the Oracle user and group (if enabled)
 2. It then creates the inventory directory with proper permissions
 3. The oraInst.loc file is created to point to this directory
-4. Additional features like backups can be configured as needed
+4. When a product is registered:
+   - A product-specific directory is created
+   - Product inventory files are generated
+   - For RAC installations, node-specific files are created
+   - Component information is recorded if specified
+5. Audit logs are maintained for all changes
+
+## Oracle Version Support
+
+This cookbook supports all current and recent Oracle Database versions:
+
+- Oracle Database 21c (21.3.0)
+- Oracle Database 19c (19.3.0) - Long Term Support Release
+- Oracle Database 18c (18.3.0)
+- Oracle Database 12c Release 2 (12.2.0.1)
+- Oracle Database 12c Release 1 (12.1.0.2)
+- Oracle Database 11g Release 2 (11.2.0.4)
+
+For each version, the cookbook includes:
+
+- Correct version numbers
+- Available installation types (Enterprise, Standard, Express)
+- Default installation paths
+- Edition-specific configurations
 
 ## Enterprise Features
 
@@ -187,6 +283,42 @@ The cookbook produces detailed logs that can be integrated with enterprise monit
 - Chef logs for setup and configuration
 - Backup operation logs
 - Audit logs for inventory changes
+
+### RAC Support
+
+The cookbook supports Oracle Real Application Clusters (RAC):
+
+- Multi-node inventory management
+- Grid Infrastructure configuration
+- Node-specific inventory files
+- Cluster-wide component tracking
+
+## Continuous Integration and Delivery
+
+This cookbook uses GitHub Actions for CI/CD:
+
+- Automated testing for all changes
+- Style and syntax checking
+- Integration testing across multiple platforms
+- Automated publishing to GitHub Packages
+
+## GitHub Packages Integration
+
+The cookbook is available through GitHub Packages:
+
+1. Configure your Chef environment to use GitHub Packages as a source:
+   ```ruby
+   # Berksfile
+   source 'https://supermarket.chef.io'
+   source 'https://github.com/thomasvincent/oracle-inventory-management-tool/packages'
+   
+   cookbook 'oracle-inventory-management'
+   ```
+
+2. Or download the package directly:
+   ```bash
+   gh release download --repo thomasvincent/oracle-inventory-management-tool --pattern "*.tgz"
+   ```
 
 ## Contributing
 

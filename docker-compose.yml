@@ -1,0 +1,9 @@
+version: '3.8'
+
+services:
+  chef:
+    build: .
+    volumes:
+      - .:/cookbook
+    working_dir: /cookbook
+    command: "--help"

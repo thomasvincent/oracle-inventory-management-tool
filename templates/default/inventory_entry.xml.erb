@@ -7,12 +7,30 @@
   <HOME_LIST>
     <HOME NAME="<%= @product_name %>" LOC="<%= @oracle_home %>" TYPE="O" IDX="1">
       <NODE_LIST>
-        <NODE NAME="<%= node['hostname'] %>"/>
+        <NODE NAME="<%= @hostname %>"/>
+        <% if @is_rac && !@rac_nodes.empty? %>
+        <% @rac_nodes.each do |node| %>
+        <NODE NAME="<%= node %>"/>
+        <% end %>
+        <% end %>
       </NODE_LIST>
       <REFHOMELIST>
         <REFHOME LOC="<%= @oracle_base %>"/>
       </REFHOMELIST>
     </HOME>
+    <% if @is_rac && @grid_home %>
+    <HOME NAME="<%= @product_name %> Grid Infrastructure" LOC="<%= @grid_home %>" TYPE="G" IDX="2">
+      <NODE_LIST>
+        <NODE NAME="<%= @hostname %>"/>
+        <% @rac_nodes.each do |node| %>
+        <NODE NAME="<%= node %>"/>
+        <% end %>
+      </NODE_LIST>
+      <REFHOMELIST>
+        <REFHOME LOC="<%= @oracle_base %>"/>
+      </REFHOMELIST>
+    </HOME>
+    <% end %>
   </HOME_LIST>
   <COMPOSITEHOME_LIST>
   </COMPOSITEHOME_LIST>
@@ -20,8 +38,18 @@
     <PRODUCT NAME="<%= @product_name %>">
       <VERSION VALUE="<%= @product_version %>"/>
       <INSTALLATION_TYPE VALUE="<%= @installation_type %>"/>
+      <INSTALLATION_EDITION VALUE="<%= @installation_edition %>"/>
       <INSTALLATION_DATE VALUE="<%= @installation_date %>"/>
       <INSTALLATION_USER VALUE="<%= @installation_user %>"/>
+      <ORACLE_VERSION VALUE="<%= @oracle_version %>"/>
+      <% if @is_rac %>
+      <CLUSTER_CONFIG VALUE="TRUE"/>
+      <% else %>
+      <CLUSTER_CONFIG VALUE="FALSE"/>
+      <% end %>
+      <% if !@components.empty? %>
+      <COMPONENTS_REF VALUE="components.xml"/>
+      <% end %>
     </PRODUCT>
   </PRODUCT_INFO>
 </INVENTORY>

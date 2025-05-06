@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<COMPONENTS>
+  <VERSION_INFO>
+    <SAVED_WITH>Oracle Inventory Manager</SAVED_WITH>
+    <MINIMUM_VER>2.1.0.6.0</MINIMUM_VER>
+  </VERSION_INFO>
+  <PRODUCT NAME="<%= @product_name %>" VERSION="<%= @product_version %>">
+    <% @components.each do |component| %>
+    <COMPONENT NAME="<%= component['name'] %>" VERSION="<%= component['version'] || @product_version %>">
+      <INSTALL_TIME><%= component['install_time'] || Time.now.strftime('%Y-%m-%d %H:%M:%S') %></INSTALL_TIME>
+      <INSTALL_STATE><%= component['state'] || 'INSTALLED' %></INSTALL_STATE>
+      <% if component['patch_level'] %>
+      <PATCH_LEVEL><%= component['patch_level'] %></PATCH_LEVEL>
+      <% end %>
+      <% if component['options'] && !component['options'].empty? %>
+      <OPTIONS>
+        <% component['options'].each do |option| %>
+        <OPTION NAME="<%= option %>" STATE="INSTALLED"/>
+        <% end %>
+      </OPTIONS>
+      <% end %>
+    </COMPONENT>
+    <% end %>
+  </PRODUCT>
+</COMPONENTS>

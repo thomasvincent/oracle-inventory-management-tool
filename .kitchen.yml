@@ -34,6 +34,8 @@ suites:
           location: /opt/oracle/oraInventory
           ora_inst_path: /etc/oraInst.loc
           manage_users: true
+          audit_changes: true
+          audit_log: /var/log/oracle/inventory_audit.log
           
   - name: backup
     run_list:
@@ -52,3 +54,65 @@ suites:
           manage_users: true
           backup_dir: /var/backups/oracle_inventory
           max_backups: 5
+          audit_changes: true
+          audit_log: /var/log/oracle/inventory_audit.log
+
+  # Test suite for Oracle version support
+  - name: oracle-versions
+    run_list:
+      - recipe[oracle-inventory-management::default]
+      - recipe[oracle-inventory-management::test_versions]
+    verifier:
+      inspec_tests:
+        - test/integration/oracle-versions
+    attributes:
+      oracle:
+        inventory:
+          user: oracle
+          group: dba
+          location: /opt/oracle/oraInventory
+          ora_inst_path: /etc/oraInst.loc
+          manage_users: true
+          audit_changes: true
+          audit_log: /var/log/oracle/inventory_audit.log
+        default_version: '19c'
+
+  # Test suite for Oracle RAC support
+  - name: oracle-rac
+    run_list:
+      - recipe[oracle-inventory-management::default]
+      - recipe[oracle-inventory-management::test_rac]
+    verifier:
+      inspec_tests:
+        - test/integration/oracle-rac
+    attributes:
+      oracle:
+        inventory:
+          user: oracle
+          group: dba
+          location: /opt/oracle/oraInventory
+          ora_inst_path: /etc/oraInst.loc
+          manage_users: true
+          audit_changes: true
+          audit_log: /var/log/oracle/inventory_audit.log
+        default_version: '19c'
+
+  # Test suite for inventory_entry custom resource
+  - name: custom-resource
+    run_list:
+      - recipe[oracle-inventory-management::default]
+      - recipe[oracle-inventory-management::test_custom_resource]
+    verifier:
+      inspec_tests:
+        - test/integration/custom-resource
+    attributes:
+      oracle:
+        inventory:
+          user: oracle
+          group: dba
+          location: /opt/oracle/oraInventory
+          ora_inst_path: /etc/oraInst.loc
+          manage_users: true
+          audit_changes: true
+          audit_log: /var/log/oracle/inventory_audit.log
+        default_version: '19c'
