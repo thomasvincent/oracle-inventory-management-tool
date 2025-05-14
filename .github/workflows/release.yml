@@ -11,7 +11,7 @@ jobs:
     - name: Check out code
       uses: actions/checkout@v4
     - name: Install Ruby
-      uses: ruby/setup-ruby@v1.237.0
+      uses: ruby/setup-ruby@v1.238.0
       with:
         ruby-version: '3.0'
         bundler-cache: true
